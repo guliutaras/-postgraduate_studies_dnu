@@ -1,6 +1,7 @@
 from neural_network import *
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 from openml.datasets.functions import get_dataset
 from gtda.plotting import plot_point_cloud
@@ -19,12 +20,12 @@ random.seed(0)
 
 amount_totrain = 1000
 amount_totest = 500
-start_sample = -100
-end_sample = 100
+start_sample = -3
+end_sample = 3
 
 totalamount = amount_totrain+amount_totest + 5 
 
-sinewave = samplefuntion2d(func_complex, start_sample , end_sample , totalamount)
+sinewave = samplefuntion2d(func_sin, start_sample , end_sample , totalamount)
 
 minmax_scaler = preprocessing.MinMaxScaler(feature_range=(-1,1))
 data_minmax = minmax_scaler.fit_transform(sinewave.reshape(-1,1))
@@ -41,7 +42,7 @@ x3test = data_minmax[amount_totrain+2:amount_totrain+amount_totest+2].tolist()
 x4test = data_minmax[amount_totrain+3:amount_totrain+amount_totest+3].tolist()
 dfxtest =  list(map(lambda x, y, z, k:[(x[0],y[0],z[0]),[k[0]]], x1test, X2test, x3test, x4test))
 
-xground = sinewave[3:amount_totrain+amount_totest+3].tolist();
+xground = sinewave[3:amount_totrain+amount_totest+3].tolist()
 
 """
 df = pd.read_csv("EKG_Reading_Up16_Shift2.csv")
@@ -71,10 +72,21 @@ for j, (inputs, targets) in enumerate(dfx+dfxtest):
 actual_outputsTrans= minmax_scaler.inverse_transform(np.array(actual_outputs).reshape(-1,1)).tolist()
 flat_list = [item for sublist in actual_outputsTrans for item in sublist]
 
-fig2 = px.line(title='ground')
-fig2.add_scatter(x=np.linspace(start_sample , end_sample, totalamount)[3:amount_totrain+amount_totest+3],y=xground, name='XComp')
-fig2.show()
+fig = go.Figure()
 
-fig3 = px.line(title='Actual')
-fig3.add_scatter(x=np.linspace(start_sample , end_sample, totalamount)[3:amount_totrain+amount_totest+3],y=flat_list, name='XComp')
-fig3.show()
+fig.add_trace(
+     go.Scatter(x=np.linspace(start_sample , end_sample, totalamount)[3:amount_totrain+amount_totest+3],y=xground, name='Ground')
+)
+
+fig.add_trace(
+     go.Scatter(x=np.linspace(start_sample , end_sample, totalamount)[3:amount_totrain+amount_totest+3],y=flat_list, name='Actual')
+)
+
+fig.show()
+#fig2 = px.line(title='ground')
+#fig2.add_scatter(x=np.linspace(start_sample , end_sample, totalamount)[3:amount_totrain+amount_totest+3],y=xground, name='XComp')
+#fig2.show()
+
+#fig3 = px.line(title='Actual')
+#fig3.add_scatter(x=np.linspace(start_sample , end_sample, totalamount)[3:amount_totrain+amount_totest+3],y=flat_list, name='XComp')
+#fig3.show()
