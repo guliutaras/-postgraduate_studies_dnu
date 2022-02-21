@@ -19,11 +19,10 @@ class ActivationFunction:
         return self.func(x)
 
     def sigmoid(self, x):
-        return math.tanh(x)
-
+        return x*math.sin(x)
     # derivative of our sigmoid function, in terms of the output (i.e. y)
     def dsigmoid(self, y):
-        return 1.0 - y**2
+        return math.sin(y)-y*math.cos(y)
 
 
 if __name__ == '__main__':

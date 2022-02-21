@@ -1,5 +1,7 @@
 import time
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
 
 def backspace():
     print('\r', end='')                     # use '\r' to go back
@@ -16,9 +18,26 @@ def samplefuntion2d(n_func, start, finish, rate):
     return n_func(np.linspace(start, finish, rate))
 
 def func_sin(i):
-    frequency = 3
+    frequency = 1
     amplitude = 1
     return  amplitude * np.sin(2 * np.pi * frequency * (i))
 
 def func_complex(i):
-    return 2*i**3- 3*i**2+ i - 12
+    return i/(np.sqrt(1+i**2))
+
+def attractorShell(params, t):
+    x, y, z = params
+    x_dot = 2000 - x + 300*y*y - 10000*z*z
+    y_dot = y + z*2 + x*(y+4*z)
+    z_dot = -2*y + z + x*((-4)*y + z)
+    return x_dot, y_dot, z_dot
+
+
+def func_ode_sample(start , finish , rate , startx, starty, startz):
+    ys = odeint(attractorShell, [startx, starty, startz], np.linspace(start, finish, rate))
+    return ys
+
+def plot3Dref(ys):
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.plot3D(ys[:,0], ys[:,1], ys[:,2], alpha=1.75)
