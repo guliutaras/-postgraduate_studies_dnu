@@ -27,9 +27,9 @@ def func_complex(i):
 
 def attractorShell(params, t):
     x, y, z = params
-    x_dot = 2000 - x + 300*y*y - 10000*z*z
-    y_dot = y + z*2 + x*(y+4*z)
-    z_dot = -2*y + z + x*((-4)*y + z)
+    x_dot =-0.4*x+y
+    y_dot = x+0.3*y-x*z
+    z_dot = -0.2*z+y**2-1
     return x_dot, y_dot, z_dot
 
 

@@ -19,41 +19,41 @@ random.seed(0)
 # fig = plot_point_cloud(point_cloud)
 # fig.show()
 
-amount_totrain = 1000
-amount_totest = 500
-start_sample = 0
-end_sample = 3
-sample_rate = 5000
-start_vec = [0,0,0.0002]
+amount_totrain = 5000
+amount_totest = 2000
+start_sample = -10
+end_sample = 100
+sample_rate = 10000
+start_vec = [0,4.5,5.0002]
 totalamount = amount_totrain+amount_totest + 5 
 
 #sinewave = samplefuntion2d(func_complex, start_sample , end_sample , totalamount)
 chell_sample = func_ode_sample(start_sample,end_sample,sample_rate,start_vec[0],start_vec[1],start_vec[2])
-plot3Dref(chell_sample)
-minmax_scaler = preprocessing.MinMaxScaler(feature_range=(-1,1))
-data_minmaxX = minmax_scaler.fit_transform(chell_sample[:amount_totrain+amount_totest+3,0].reshape(-1,1))
-data_minmaxY = minmax_scaler.fit_transform(chell_sample[:amount_totrain+amount_totest+3,1].reshape(-1,1))
-data_minmaxZ = minmax_scaler.fit_transform(chell_sample[:amount_totrain+amount_totest+3,2].reshape(-1,1))
 
-x_train = data_minmaxX[:amount_totrain].tolist()
-y_train = data_minmaxY[:amount_totrain].tolist()
-z_train = data_minmaxZ[:amount_totrain].tolist()
-x_recive = data_minmaxX[1:amount_totrain+1].tolist()
-y_recive = data_minmaxY[1:amount_totrain+1].tolist()
-z_recive = data_minmaxZ[1:amount_totrain+1].tolist()
-dfx =  list(map(lambda xt, yt, zt, xr,yr,zr:[(xt[0],yt[0],zt[0]),[xr[0],yr[0],zr[0]]], x_train,y_train, z_train, x_recive,y_recive,z_recive))
+minmax_scaler = preprocessing.MinMaxScaler(feature_range=(0,1))
 
-x_test_t = data_minmaxX[:amount_totrain].tolist()
-y_test_t = data_minmaxY[:amount_totrain].tolist()
-z_test_t = data_minmaxZ[:amount_totrain].tolist()
-x_test_r = data_minmaxX[1:amount_totrain+1].tolist()
-y_test_r = data_minmaxY[1:amount_totrain+1].tolist()
-z_test_r = data_minmaxZ[1:amount_totrain+1].tolist()
-dfxtest =  list(map(lambda xt, yt, zt, xr,yr,zr:[(xt[0],yt[0],zt[0]),[xr[0],yr[0],zr[0]]], x_test_t,y_test_t, z_test_t, x_test_r,y_test_r,z_test_r))
+minmaxed = minmax_scaler.fit_transform(chell_sample)
+plot3Dref(minmaxed)
 
-xground = chell_sample[:amount_totrain+amount_totest+3,0].tolist()
-yground = chell_sample[:amount_totrain+amount_totest+3,1].tolist()
-zground = chell_sample[:amount_totrain+amount_totest+3,2].tolist()
+x_train = minmaxed[:amount_totrain,0].tolist()
+y_train = minmaxed[:amount_totrain,1].tolist()
+z_train = minmaxed[:amount_totrain,2].tolist()
+x_recive = minmaxed[1:amount_totrain+1,0].tolist()
+y_recive = minmaxed[1:amount_totrain+1,1].tolist()
+z_recive = minmaxed[1:amount_totrain+1,2].tolist()
+dfx =  list(map(lambda xt, yt, zt, xr,yr,zr:[(xt,yt,zt),[xr,yr,zr]], x_train,y_train, z_train, x_recive,y_recive,z_recive))
+
+x_test_t = minmaxed[amount_totrain:amount_totrain+amount_totest,0].tolist()
+y_test_t = minmaxed[amount_totrain:amount_totrain+amount_totest,1].tolist()
+z_test_t = minmaxed[amount_totrain:amount_totrain+amount_totest,2].tolist()
+x_test_r = minmaxed[1+amount_totrain:amount_totrain+amount_totest+1,0].tolist()
+y_test_r = minmaxed[1+amount_totrain:amount_totrain+amount_totest+1,1].tolist()
+z_test_r = minmaxed[1+amount_totrain:amount_totrain+amount_totest+1,2].tolist()
+dfxtest =  list(map(lambda xt, yt, zt, xr,yr,zr:[(xt,yt,zt),[xr,yr,zr]], x_test_t,y_test_t, z_test_t, x_test_r,y_test_r,z_test_r))
+
+xground = minmaxed[1:amount_totrain+amount_totest+1,0].tolist()
+yground = minmaxed[1:amount_totrain+amount_totest+1,1].tolist()
+zground = minmaxed[1:amount_totrain+amount_totest+1,2].tolist()
 
 # #df = pd.read_csv("EKG_Reading_Up16_Shift2.csv")
 
@@ -76,19 +76,23 @@ nn.train(dataset=dfx, n_iterations=100, print_error_report=True)
 actual_outputsx = []
 actual_outputsy = []
 actual_outputsz = []
-actual_outputsTrans = []
+actual_outputs = []
 for j, (inputs, targets) in enumerate(dfx+dfxtest):
      іses = nn.feed_forward(inputs)
      actual_outputsx.append(іses[0])
      actual_outputsy.append(іses[1])
      actual_outputsz.append(іses[2])
+     actual_outputs.append(іses)
 
-actual_outputsTransx= minmax_scaler.inverse_transform(np.array(actual_outputsx).reshape(-1,1)).tolist()
-flat_listx = [item for sublist in actual_outputsTransx for item in sublist]
-actual_outputsTransy= minmax_scaler.inverse_transform(np.array(actual_outputsy).reshape(-1,1)).tolist()
-flat_listy = [item for sublist in actual_outputsTransy for item in sublist]
-actual_outputsTransz= minmax_scaler.inverse_transform(np.array(actual_outputsz).reshape(-1,1)).tolist()
-flat_listz = [item for sublist in actual_outputsTransz for item in sublist]
+#plot3Dref(actual_outputs)
+minmaxedNN =minmax_scaler.inverse_transform(actual_outputs)
+plot3Dref(minmaxedNN)
+# actual_outputsTransx= minmax_scaler.inverse_transform(np.array(actual_outputsx).reshape(-1,1)).tolist()
+# flat_listx = [item for sublist in actual_outputsTransx for item in sublist]
+# actual_outputsTransy= minmax_scaler.inverse_transform(np.array(actual_outputsy).reshape(-1,1)).tolist()
+# flat_listy = [item for sublist in actual_outputsTransy for item in sublist]
+# actual_outputsTransz= minmax_scaler.inverse_transform(np.array(actual_outputsz).reshape(-1,1)).tolist()
+# flat_listz = [item for sublist in actual_outputsTransz for item in sublist]
 
 fig = go.Figure()
 
@@ -102,13 +106,13 @@ fig.add_trace(
      go.Scatter(y=zground, name='GroundZ')
 )
 fig.add_trace(
-     go.Scatter(y=flat_listx, name='ActualX')
+     go.Scatter(y=actual_outputsx, name='ActualX')
 )
 fig.add_trace(
-     go.Scatter(y=flat_listy, name='ActualY')
+     go.Scatter(y=actual_outputsy, name='ActualY')
 )
 fig.add_trace(
-     go.Scatter(y=flat_listz, name='ActualY')
+     go.Scatter(y=actual_outputsz, name='ActualZ')
 )
 fig.show()
 #fig2 = px.line(title='ground')
