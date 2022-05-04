@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+import os
 from openml.datasets.functions import get_dataset
 from gtda.plotting import plot_point_cloud
 import plotly.express as px
@@ -114,6 +115,10 @@ fig.add_trace(
 fig.add_trace(
      go.Scatter(y=actual_outputsz, name='ActualZ')
 )
+
+if not os.path.exists("images"):
+    os.mkdir("images")
+fig.write_image("images/fig1.png")
 fig.show()
 #fig2 = px.line(title='ground')
 #fig2.add_scatter(x=np.linspace(start_sample , end_sample, totalamount)[3:amount_totrain+amount_totest+3],y=xground, name='XComp')

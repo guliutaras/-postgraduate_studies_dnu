@@ -20,6 +20,9 @@ class ActivationFunction:
         if types == 'Gausse':
             self.func = self.gause
             self.dfunc = self.dgause
+        if types == 'betterSigmoid':
+            self.func = self.betterSigmoid
+            self.dfunc = self.dbetterSigmoid
 
     def run(self, x):
         return self.func(x)
@@ -42,6 +45,14 @@ class ActivationFunction:
     def dgause(self, y):
         return -2*y*math.exp(-y**2)
 
+    def betterSigmoid(self, x):
+        if(x<0):
+            return -1*math.log(1+5*x**2)
+        else:
+            return math.log(1+5*x**2)
+
+    def dbetterSigmoid(self, y):
+        return (10*abs(y))/(1+5*y**2)
 
 if __name__ == '__main__':
     myfunc = ActivationFunction('Sine')
